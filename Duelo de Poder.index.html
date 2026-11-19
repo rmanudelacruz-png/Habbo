@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Duelo de Poder</title>
+
+    <!-- Meta tags PWA para instalar como App nativa sin barra de navegador -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Duelo de Poder">
+    <meta name="theme-color" content="#0f172a">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Fuentes Arcade / Fantasía -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100dvh;
+            overflow: hidden;
+            background-color: #070b14;
+            color: #ffffff;
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        h1, h2, h3, .font-title {
+            font-family: 'Fredoka', sans-serif;
+            letter-spacing: 0.4px;
+        }
+
+        /* Contenedor Principal tipo App Móvil */
+        #app-shell {
+            width: 100%;
+            max-width: 480px;
+            height: 100dvh;
+            background: radial-gradient(circle at top, #1e293b 0%, #0f172a 65%, #070b14 100%);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.95);
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Botones táctiles 3D */
+        .btn-3d {
+            transition: transform 0.08s ease, box-shadow 0.08s ease;
+            position: relative;
+            top: 0;
+        }
+        .btn-3d:active:not(:disabled) {
+            top: 3px;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.5) !important;
+        }
+        .btn-3d:disabled {
+            opacity: 0.45;
+            filter: grayscale(0.8);
+            cursor: not-allowed;
+        }
+
+        .btn-gold {
+            background: linear-gradient(180deg, #fde047 0%, #eab308 100%);
+            color: #422006;
+            border: 2px solid #fef08a;
+            box-shadow: 0 4px 0 #a16207;
+        }
+        .btn-blue {
+            background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+            color: #ffffff;
+            border: 2px solid #7dd3fc;
+            box-shadow: 0 4px 0 #0369a1;
+        }
+        .btn-green {
+            background: linear-gradient(180deg, #4ade80 0%, #16a34a 100%);
+            color: #ffffff;
+            border: 2px solid #86efac;
+            box-shadow: 0 4px 0 #15803d;
+        }
+        .btn-purple {
+            background: linear-gradient(180deg, #c084fc 0%, #9333ea 100%);
+            color: #ffffff;
+            border: 2px solid #e9d5ff;
+            box-shadow: 0 4px 0 #6b21a8;
+        }
+
+        /* Marcos de Rareza de Cartas */
+        .rarity-comun {
+            border-color: #94a3b8;
+            background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
+        }
+        .rarity-rara {
+            border-color: #38bdf8;
+            background: linear-gradient(180deg, #0369a1 0%, #0c4a6e 100%);
+        }
+        .rarity-epica {
+            border-color: #c084fc;
+            background: linear-gradient(180deg, #6b21a8 0%, #3b0764 100%);
+        }
+        .rarity-legendaria {
+            border-color: #fde047;
+            background: linear-gradient(135deg, #0284c7 0%, #7e22ce 50%, #eab308 100%);
+            box-shadow: 0 0 14px rgba(250, 204, 21, 0.45);
+        }
+
+        /* Animaciones dinámicas de choque de cartas 1v1 */
+        @keyframes clashPlayer {
+            0% { transform: translateY(35px) scale(0.85); opacity: 0.4; }
+            55% { transform: translateY(-10px) scale(1.08); opacity: 1; }
+            75% { transform: translateY(4px) scale(0.97); }
+            100% { transform: translateY(0) scale(1); }
+        }
+        @keyframes clashEnemy {
+            0% { transform: translateY(-35px) scale(0.85); opacity: 0.4; }
+            55% { transform: translateY(10px) scale(1.08); opacity: 1; }
+            75% { transform: translateY(-4px) scale(0.97); }
+            100% { transform: translateY(0) scale(1); }
+        }
+        .anim-clash-player { animation: clashPlayer 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+        .anim-clash-enemy  { animation: clashEnemy 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+        @keyframes floatDamage {
+            0% { transform: translate(-50%, 0) scale(0.7); opacity: 1; }
+            40% { transform: translate(-50%, -22px) scale(1.15); opacity: 1; }
+            100% { transform: translate(-50%, -44px) scale(1); opacity: 0; }
+        }
+        .anim-dmg-float { animation: floatDamage 0.95s ease-out forwards; }
+
+        @keyframes screenShake {
+            0%, 100% { transform: translate(0, 0); }
+            20% { transform: translate(-6px, 4px); }
+            40% { transform: translate(6px, -4px); }
+            60% { transform: translate(-4px, -3px); }
+            80% { transform: translate(4px, 3px); }
+        }
+        .shake-active { animation: screenShake 0.32s ease-in-out; }
+
+        /* Cartas giratorias en Tienda */
+        @keyframes cardPop {
+            0% { transform: scale(0.7) rotateY(90deg); opacity: 0; }
+            100% { transform: scale(1) rotateY(0deg); opacity: 1; }
+        }
+        .anim-card-flip { animation: cardPop 0.35s ease-out forwards; }
+    </style>
+</head>
+<body>
+
+<div id="app-shell">
+    <!-- BARRA SUPERIOR COMPACTA -->
+    <header class="flex items-center justify-between px-3 py-2 bg-slate-900/95 border-b border-slate-800 shrink-0 z-20">
+        <!-- Arena y Trofeos -->
+        <div onclick="openArenasModal()" class="flex items-center gap-2 cursor-pointer active:scale-95 transition">
+            <div id="ui-arena-badge" class="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 border border-emerald-300 flex items-center justify-center text-base shadow">
+                🌲
+            </div>
+            <div>
+                <div class="text-[10px] text-slate-400 font-extrabold uppercase leading-none">Arena <span id="ui-arena-num">1</span></div>
+                <div class="flex items-center gap-1 text-amber-400 font-black text-sm leading-tight">
+                    <i class="fa-solid fa-trophy text-[11px]"></i>
+                    <span id="ui-trophies">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones Rápidos: Elementos + Instalar App + Sonido -->
+        <div class="flex items-center gap-1.5">
+            <button onclick="toggleElementDrawer()" class="bg-indigo-600/90 hover:bg-indigo-500 border border-indigo-300 text-white px-2 py-1 rounded-lg text-[10px] font-black flex items-center gap-1 shadow active:scale-95">
+                <i class="fa-solid fa-fire-flame-curved text-amber-300"></i>
+                <span>x1.5</span>
+            </button>
+            <button id="btn-install-pwa" onclick="triggerPwaInstall()" class="bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/60 text-sky-300 px-2 py-1 rounded-lg text-[10px] font-extrabold flex items-center gap-1 active:scale-95">
+                <i class="fa-solid fa-mobile-screen-button"></i>
+                <span>App</span>
+            </button>
+            <button onclick="toggleSound()" class="w-7 h-7 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 flex items-center justify-center text-xs active:scale-95">
+                <i id="sound-icon" class="fa-solid fa-volume-high text-emerald-400"></i>
+            </button>
+        </div>
+
+        <!-- Monedas -->
+        <div class="flex items-center gap-1.5 bg-slate-800/90 px-2.5 py-1 rounded-full border border-amber-500/40">
+            <i class="fa-solid fa-coins text-amber-400 text-xs"></i>
+            <span id="ui-coins" class="font-black text-sm text-amber-100">400</span>
+        </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL (SIN SCROLL EN CELULAR) -->
+    <main class="flex-1 relative overflow-hidden flex flex-col">
+
+        <!-- =========================================================
+             PESTANA 1: BATALLA (LOBBY + COFRE 12H CORREGIDO)
+             ========================================================= -->
+        <section id="view-battle" class="h-full flex flex-col justify-between p-3 gap-2.5">
+            
+            <!-- Tarjeta Central de Arena Actual -->
+            <div class="flex-1 rounded-3xl border-2 border-slate-700/80 bg-gradient-to-b from-slate-800/90 to-slate-900/95 p-3.5 flex flex-col items-center justify-between relative overflow-hidden shadow-xl">
+                <div class="absolute -top-12 w-56 h-56 rounded-full bg-amber-500/10 blur-3xl pointer-events-none"></div>
+
+                <div class="w-full flex items-center justify-between z-10">
+                    <span id="lobby-arena-tag" class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                        Arena 1 / 5
+                    </span>
+                    <button onclick="openArenasModal()" class="text-[11px] font-extrabold text-sky-300 flex items-center gap-1 bg-slate-800/90 px-2.5 py-1 rounded-full border border-slate-600">
+                        <span>Ver 5 Arenas</span>
+                        <i class="fa-solid fa-chevron-right text-[9px]"></i>
+                    </button>
+                </div>
+
+                <!-- Emblema y Título de Arena -->
+                <div class="flex flex-col items-center text-center z-10 my-auto">
+                    <div id="lobby-arena-emblem" class="w-24 h-24 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-800 border-4 border-white/30 shadow-2xl flex items-center justify-center text-5xl mb-2">
+                        🌲
+                    </div>
+                    <h2 id="lobby-arena-name" class="font-title text-2xl font-bold text-white leading-tight">Bosque Elemental</h2>
+                    <p id="lobby-arena-desc" class="text-[11px] text-slate-300 mt-0.5 max-w-[260px]">Duelo clásico de cartas 1 contra 1. ¡Elige bien tu elemento!</p>
+
+                    <div class="mt-2.5 flex items-center gap-3 bg-slate-950/80 px-3 py-1 rounded-xl border border-slate-700">
+                        <span class="text-[10px] text-slate-400 font-bold uppercase">Recompensa:</span>
+                        <span class="text-xs font-black text-amber-400">+<span id="lobby-win-coins">100</span> <i class="fa-solid fa-coins"></i></span>
+                        <span class="text-xs font-black text-sky-400">+30 <i class="fa-solid fa-trophy"></i></span>
+                    </div>
+                </div>
+
+                <!-- Cofre Gratuito cada 12 Horas (Bug de dinero infinito corregido) -->
+                <div class="w-full bg-slate-950/85 border border-amber-500/35 rounded-2xl p-2.5 flex items-center justify-between z-10">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-700 border border-amber-200 flex items-center justify-center text-xl shadow shrink-0">
+                            🎁
+                        </div>
+                        <div>
+                            <div class="text-xs font-extrabold text-amber-200 leading-tight">Cofre Gratis (cada 12h)</div>
+                            <div id="free-coins-status-text" class="text-[10px] font-bold text-emerald-400 mt-0.5">¡Disponible ahora! (+250 oro)</div>
+                        </div>
+                    </div>
+                    <button id="btn-claim-free-coins" onclick="claimFreeCoins12h()" class="btn-3d btn-green px-3 py-2 rounded-xl font-black text-xs shrink-0 min-w-[96px] text-center">
+                        RECLAMAR
+                    </button>
+                </div>
+            </div>
+
+            <!-- Estado del Mazo Obligatorio (10/10) y Botón de Duelo -->
+            <div class="flex flex-col gap-2 shrink-0">
+                <div class="flex items-center justify-between bg-slate-800/90 px-3 py-1.5 rounded-xl border border-slate-700">
+                    <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-layer-group text-sky-400"></i> Mazo de Duelo:
+                    </span>
+                    <span id="lobby-deck-pill" class="text-xs font-black px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                        10 / 10 Listo
+                    </span>
+                </div>
+
+                <button id="btn-play-battle" onclick="startCardDuel()" class="btn-3d btn-gold w-full py-3.5 rounded-2xl font-title text-xl font-bold uppercase tracking-wide flex items-center justify-center gap-2 shadow-xl">
+                    <i class="fa-solid fa-bolt"></i> ¡INICIAR DUELO 1v1!
+                </button>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             PESTANA 2: MAZO Y COLECCIÓN (10 CARTAS ÚNICAS OBLIGATORIAS)
+             ========================================================= -->
+        <section id="view-deck" class="h-full hidden flex-col p-2.5 gap-2 overflow-hidden">
+            <!-- Mazo Activo de 10 Cartas -->
+            <div class="bg-slate-800/95 rounded-2xl p-2 border border-slate-700 shrink-0">
+                <div class="flex items-center justify-between mb-1.5 px-1">
+                    <div class="flex items-center gap-1.5">
+                        <span class="font-title text-sm font-bold text-white">Tu Mazo</span>
+                        <span id="deck-count-badge" class="text-[11px] font-black px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">10/10</span>
+                    </div>
+                    <button onclick="autoFillBestDeck()" class="bg-sky-600/30 hover:bg-sky-600/50 border border-sky-400/50 text-sky-200 px-2 py-0.5 rounded-lg text-[10px] font-extrabold flex items-center gap-1 active:scale-95">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Mazo
+                    </button>
+                </div>
+                <!-- 10 espacios (2 filas x 5 columnas) -->
+                <div id="active-deck-slots" class="grid grid-cols-5 gap-1.5"></div>
+            </div>
+
+            <!-- Filtros por Elemento -->
+            <div class="flex items-center gap-1 overflow-x-auto no-scrollbar shrink-0 py-0.5">
+                <button onclick="setDeckFilter('TODOS')" class="filter-chip px-2.5 py-1 rounded-lg text-[11px] font-black bg-sky-600 text-white shrink-0">Todas</button>
+                <button onclick="setDeckFilter('Fuego')" class="filter-chip px-2 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-slate-300 shrink-0">🔥 Fuego</button>
+                <button onclick="setDeckFilter('Planta')" class="filter-chip px-2 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-slate-300 shrink-0">🌿 Planta</button>
+                <button onclick="setDeckFilter('Agua')" class="filter-chip px-2 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-slate-300 shrink-0">💧 Agua</button>
+                <button onclick="setDeckFilter('Rayo')" class="filter-chip px-2 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-slate-300 shrink-0">⚡ Rayo</button>
+                <button onclick="setDeckFilter('Tierra')" class="filter-chip px-2 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-slate-300 shrink-0">🪨 Tierra</button>
+                <button onclick="setDeckFilter('Luz')" class="filter-chip px-2 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-slate-300 shrink-0">✨ Luz</button>
+                <button onclick="setDeckFilter('Oscuridad')" class="filter-chip px-2 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-slate-300 shrink-0">🌑 Oscuridad</button>
+            </div>
+
+            <!-- Colección de Cartas -->
+            <div class="flex-1 overflow-y-auto no-scrollbar pr-0.5">
+                <div class="flex justify-between text-[10px] font-extrabold text-slate-400 uppercase mb-1 px-1">
+                    <span>Cartas (<span id="collection-unlocked">10</span>/20)</span>
+                    <span>Toca para subir nivel o equipar</span>
+                </div>
+                <div id="collection-cards-grid" class="grid grid-cols-3 gap-2 pb-2"></div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             PESTANA 3: TIENDA DE SOBRES INTERACTIVA
+             ========================================================= -->
+        <section id="view-shop" class="h-full hidden flex-col p-3 gap-2.5 overflow-y-auto no-scrollbar">
+            <div class="text-center shrink-0">
+                <h2 class="font-title text-lg font-bold text-amber-300">Tienda de Sobres</h2>
+                <p class="text-[11px] text-slate-300">Consigue cartas nuevas y copias para subir tus cartas de nivel.</p>
+            </div>
+
+            <div class="flex-1 flex flex-col justify-center gap-2.5">
+                <!-- Sobre Básico -->
+                <div class="bg-slate-800/90 border-2 border-slate-500 rounded-2xl p-3 flex items-center justify-between shadow-lg">
+                    <div class="flex items-center gap-3">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-600 to-slate-800 border-2 border-sky-300 flex items-center justify-center text-3xl shrink-0">
+                            🎴
+                        </div>
+                        <div>
+                            <h3 class="font-title font-bold text-base text-white">Sobre Básico</h3>
+                            <p class="text-[11px] text-slate-300 leading-tight">3 cartas con al menos 1 Rara garantizada.</p>
+                        </div>
+                    </div>
+                    <button onclick="buyPack('basico', 120)" class="btn-3d btn-gold px-3 py-2 rounded-xl font-black text-xs flex flex-col items-center shrink-0 min-w-[76px]">
+                        <span>ABRIR</span>
+                        <span class="text-[11px] mt-0.5"><i class="fa-solid fa-coins"></i> 120</span>
+                    </button>
+                </div>
+
+                <!-- Sobre Épico -->
+                <div class="bg-gradient-to-r from-purple-950/80 to-slate-900 border-2 border-purple-400 rounded-2xl p-3 flex items-center justify-between shadow-lg">
+                    <div class="flex items-center gap-3">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-purple-900 border-2 border-fuchsia-200 flex items-center justify-center text-3xl shrink-0">
+                            🔮
+                        </div>
+                        <div>
+                            <h3 class="font-title font-bold text-base text-purple-300">Sobre Épico</h3>
+                            <p class="text-[11px] text-slate-300 leading-tight">5 cartas con 1 Épica asegurada y opción Legendaria.</p>
+                        </div>
+                    </div>
+                    <button onclick="buyPack('epico', 300)" class="btn-3d btn-purple px-3 py-2 rounded-xl font-black text-xs flex flex-col items-center shrink-0 min-w-[76px]">
+                        <span>ABRIR</span>
+                        <span class="text-[11px] mt-0.5"><i class="fa-solid fa-coins"></i> 300</span>
+                    </button>
+                </div>
+
+                <!-- Sobre Legendario -->
+                <div class="bg-gradient-to-r from-amber-950/80 via-purple-950/80 to-slate-900 border-2 border-amber-400 rounded-2xl p-3 flex items-center justify-between shadow-lg">
+                    <div class="flex items-center gap-3">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-400 via-pink-500 to-sky-400 border-2 border-white flex items-center justify-center text-3xl shrink-0">
+                            👑
+                        </div>
+                        <div>
+                            <h3 class="font-title font-bold text-base text-amber-300">Sobre Legendario</h3>
+                            <p class="text-[11px] text-slate-300 leading-tight">6 cartas supremas. ¡1 Legendaria 100% garantizada!</p>
+                        </div>
+                    </div>
+                    <button onclick="buyPack('legendario', 600)" class="btn-3d btn-blue px-3 py-2 rounded-xl font-black text-xs flex flex-col items-center shrink-0 min-w-[76px]">
+                        <span>ABRIR</span>
+                        <span class="text-[11px] mt-0.5"><i class="fa-solid fa-coins"></i> 600</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Estado del Cofre de 12 Horas -->
+            <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-2.5 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">⏳</span>
+                    <div>
+                        <div class="text-xs font-bold text-white">Cofre Gratis cada 12h</div>
+                        <div id="shop-cooldown-label" class="text-[10px] text-amber-300 font-bold">Reclámalo en Batalla</div>
+                    </div>
+                </div>
+                <button onclick="switchTab('battle')" class="bg-slate-700 hover:bg-slate-600 text-white px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold">
+                    Ir a Batalla
+                </button>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             ARENA DE DUELO DE CARTAS 1v1 POR TURNOS (DINÁMICO)
+             ========================================================= -->
+        <section id="duel-screen" class="hidden absolute inset-0 z-40 bg-slate-950 flex-col justify-between overflow-hidden">
+            
+            <!-- HUD Superior del Rival (Vida del Duelista Rival + Ronda + Elementos) -->
+            <div class="bg-slate-900/95 border-b border-slate-800 px-3 py-2 shrink-0 flex flex-col gap-1.5">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <div id="duel-enemy-avatar" class="w-8 h-8 rounded-xl bg-rose-900/80 border border-rose-400 flex items-center justify-center text-base">
+                            👹
+                        </div>
+                        <div>
+                            <div class="text-xs font-black text-rose-300 leading-none" id="duel-enemy-name">Guardián del Bosque</div>
+                            <div class="text-[10px] text-slate-400 font-bold mt-0.5">Ronda <span id="duel-round-num" class="text-white">1</span> • Mazo: <span id="duel-enemy-deck-count">10</span></div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="toggleElementDrawer()" class="btn-3d bg-indigo-600 border border-indigo-300 text-white px-2.5 py-1 rounded-xl text-xs font-black flex items-center gap-1">
+                            <i class="fa-solid fa-fire-flame-curved text-amber-300"></i>
+                            <span>Elementos</span>
+                        </button>
+                        <button onclick="openSurrenderDialog()" class="w-7 h-7 rounded-xl bg-slate-800 border border-slate-600 text-slate-300 flex items-center justify-center text-xs">
+                            <i class="fa-solid fa-flag"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Barra de Vida del Rival -->
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-black text-rose-400 w-10">RIVAL</span>
+                    <div class="flex-1 h-3.5 bg-slate-800 rounded-full overflow-hidden border border-rose-500/40 relative">
+                        <div id="enemy-hp-bar" class="h-full bg-gradient-to-r from-rose-600 to-red-400 transition-all duration-300" style="width: 100%;"></div>
+                    </div>
+                    <span id="enemy-hp-text" class="text-xs font-black text-white w-14 text-right">1000</span>
+                </div>
+            </div>
+
+            <!-- TABLERO CENTRAL DE CHOQUE DE CARTAS 1v1 -->
+            <div id="duel-arena-board" class="flex-1 relative flex flex-col items-center justify-between p-3 bg-gradient-to-b from-slate-900 via-indigo-950/40 to-slate-900 overflow-hidden">
+                
+                <!-- Carta Jugada por el Rival -->
+                <div class="w-full flex flex-col items-center justify-center flex-1">
+                    <div id="enemy-played-slot" class="w-32 h-40 rounded-2xl border-2 border-dashed border-rose-500/40 bg-slate-900/50 flex flex-col items-center justify-center text-slate-500 relative">
+                        <span class="text-2xl opacity-40">❓</span>
+                        <span class="text-[10px] font-bold mt-1">Carta Rival</span>
+                    </div>
+                </div>
+
+                <!-- Zona Central de Impacto / VS / Multiplicador Elemental -->
+                <div class="w-full py-1.5 flex items-center justify-center relative z-20">
+                    <div id="clash-banner" class="px-4 py-1.5 rounded-full bg-slate-900/95 border border-slate-700 text-xs font-extrabold text-amber-300 shadow-lg text-center transition-all">
+                        ¡Elige una carta de tu mano para atacar!
+                    </div>
+                    <!-- Contenedor de números flotantes de daño -->
+                    <div id="floating-dmg-layer" class="absolute inset-0 pointer-events-none"></div>
+                </div>
+
+                <!-- Carta Jugada por Ti -->
+                <div class="w-full flex flex-col items-center justify-center flex-1">
+                    <div id="player-played-slot" class="w-32 h-40 rounded-2xl border-2 border-dashed border-sky-500/40 bg-slate-900/50 flex flex-col items-center justify-center text-slate-500 relative">
+                        <span class="text-2xl opacity-40">🃏</span>
+                        <span class="text-[10px] font-bold mt-1">Tu Carta</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HUD INFERIOR DEL JUGADOR (TU VIDA + MANO DE 4 CARTAS DE TU MAZO DE 10) -->
+            <div class="bg-slate-900 border-t-2 border-slate-700 px-2.5 pt-2 pb-2.5 shrink-0 flex flex-col gap-2">
+                <!-- Barra de Vida del Jugador -->
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-black text-sky-400 w-10">TÚ</span>
+                    <div class="flex-1 h-3.5 bg-slate-800 rounded-full overflow-hidden border border-sky-500/40 relative">
+                        <div id="player-hp-bar" class="h-full bg-gradient-to-r from-sky-500 to-emerald-400 transition-all duration-300" style="width: 100%;"></div>
+                    </div>
+                    <span id="player-hp-text" class="text-xs font-black text-white w-14 text-right">1000</span>
+                </div>
+
+                <!-- Mano de 4 Cartas Activas -->
+                <div id="duel-hand-grid" class="grid grid-cols-4 gap-1.5"></div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             PANEL LATERAL DESPLEGABLE DE VENTAJAS ELEMENTALES (x1.5)
+             ========================================================= -->
+        <div id="element-drawer" class="hidden absolute top-12 right-2 bottom-14 w-64 bg-slate-900/95 backdrop-blur-md border-2 border-indigo-400 rounded-2xl p-3 z-50 flex flex-col justify-between shadow-2xl">
+            <div>
+                <div class="flex items-center justify-between border-b border-slate-700 pb-1.5 mb-2">
+                    <span class="font-title text-sm font-bold text-indigo-300">Ventaja Elemental x1.5</span>
+                    <button onclick="toggleElementDrawer()" class="w-6 h-6 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <p class="text-[10px] text-slate-300 mb-2 leading-tight">
+                    Si tu carta tiene ventaja elemental sobre la carta rival, inflige <span class="text-emerald-400 font-black">¡x1.5 DE DAÑO!</span>
+                </p>
+
+                <div class="space-y-1.5 text-[11px]">
+                    <div class="bg-slate-800 px-2.5 py-1.5 rounded-xl border border-slate-700 flex items-center justify-between">
+                        <span class="font-extrabold text-orange-400">🔥 Fuego</span>
+                        <span class="text-slate-400 text-[10px]">vence a</span>
+                        <span class="font-extrabold text-emerald-400">🌿 Planta</span>
+                    </div>
+                    <div class="bg-slate-800 px-2.5 py-1.5 rounded-xl border border-slate-700 flex items-center justify-between">
+                        <span class="font-extrabold text-emerald-400">🌿 Planta</span>
+                        <span class="text-slate-400 text-[10px]">vence a</span>
+                        <span class="font-extrabold text-sky-400">💧 Agua</span>
+                    </div>
+                    <div class="bg-slate-800 px-2.5 py-1.5 rounded-xl border border-slate-700 flex items-center justify-between">
+                        <span class="font-extrabold text-sky-400">💧 Agua</span>
+                        <span class="text-slate-400 text-[10px]">vence a</span>
+                        <span class="font-extrabold text-orange-400">🔥 Fuego</span>
+                    </div>
+                    <div class="bg-slate-800 px-2.5 py-1.5 rounded-xl border border-slate-700 flex items-center justify-between">
+                        <span class="font-extrabold text-yellow-300">⚡ Rayo</span>
+                        <span class="text-slate-400 text-[10px]">vence a</span>
+                        <span class="font-extrabold text-sky-400">💧 Agua</span>
+                    </div>
+                    <div class="bg-slate-800 px-2.5 py-1.5 rounded-xl border border-slate-700 flex items-center justify-between">
+                        <span class="font-extrabold text-amber-500">🪨 Tierra</span>
+                        <span class="text-slate-400 text-[10px]">vence a</span>
+                        <span class="font-extrabold text-yellow-300">⚡ Rayo</span>
+                    </div>
+                    <div class="bg-slate-800 px-2.5 py-1.5 rounded-xl border border-slate-700 flex items-center justify-between">
+                        <span class="font-extrabold text-amber-200">✨ Luz</span>
+                        <span class="text-slate-400 text-[10px]">mutuo x1.5</span>
+                        <span class="font-extrabold text-purple-400">🌑 Oscuridad</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-indigo-950/90 border border-indigo-500/40 rounded-xl p-2 text-[10px] text-center text-indigo-200 font-bold">
+                En duelo, las cartas con ventaja brillan en verde en tu mano.
+            </div>
+        </div>
+    </main>
+
+    <!-- NAVEGACIÓN INFERIOR (3 PESTAÑAS) -->
+    <nav class="bg-slate-900 border-t border-slate-800 px-2 py-1.5 grid grid-cols-3 gap-1.5 shrink-0 z-20">
+        <button onclick="switchTab('battle')" id="tab-battle" class="nav-tab flex flex-col items-center justify-center py-1 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40">
+            <i class="fa-solid fa-swords text-base"></i>
+            <span class="text-[10px] font-black mt-0.5">Batalla</span>
+        </button>
+        <button onclick="switchTab('deck')" id="tab-deck" class="nav-tab flex flex-col items-center justify-center py-1 rounded-xl text-slate-400 relative">
+            <i class="fa-solid fa-layer-group text-base"></i>
+            <span class="text-[10px] font-bold mt-0.5">Mazo (10)</span>
+            <span id="deck-warning-dot" class="hidden absolute top-1 right-6 w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+        </button>
+        <button onclick="switchTab('shop')" id="tab-shop" class="nav-tab flex flex-col items-center justify-center py-1 rounded-xl text-slate-400">
+            <i class="fa-solid fa-store text-base"></i>
+            <span class="text-[10px] font-bold mt-0.5">Tienda</span>
+        </button>
+    </nav>
+
+    <!-- =========================================================
+         MODALES (DETALLE DE CARTA, 5 ARENAS, APERTURA SOBRE, RESULTADO, PWA)
+         ========================================================= -->
+
+    <!-- Modal Detalle y Mejora de Carta -->
+    <div id="modal-card-detail" class="hidden absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border-2 border-slate-600 rounded-3xl w-full max-w-xs p-4 flex flex-col items-center relative shadow-2xl">
+            <button onclick="closeCardDetail()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center border border-slate-600">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <span id="cd-rarity" class="px-3 py-0.5 rounded-full text-[10px] font-black uppercase bg-slate-700 text-white mb-2">Común</span>
+
+            <div id="cd-visual" class="w-28 h-36 rounded-2xl border-4 rarity-comun flex flex-col items-center justify-between p-2 shadow-lg">
+                <div class="w-full flex justify-between items-center text-xs font-black">
+                    <span id="cd-elem-text" class="text-white">🔥 Fuego</span>
+                </div>
+                <div id="cd-emoji" class="text-5xl">🐉</div>
+                <span id="cd-level" class="text-[10px] font-black bg-black/60 px-2 py-0.5 rounded text-amber-300">Nivel 1</span>
+            </div>
+
+            <h3 id="cd-name" class="font-title text-xl font-bold text-white mt-2">Carta</h3>
+            <p id="cd-desc" class="text-[11px] text-slate-300 text-center mt-0.5">Descripción</p>
+
+            <div class="grid grid-cols-2 gap-2 w-full mt-3 bg-slate-800 p-2.5 rounded-xl border border-slate-700 text-center">
+                <div>
+                    <div class="text-[10px] text-slate-400 font-bold uppercase">Ataque</div>
+                    <div id="cd-atk" class="text-sm font-black text-rose-400">120</div>
+                </div>
+                <div>
+                    <div class="text-[10px] text-slate-400 font-bold uppercase">Escudo / Vida</div>
+                    <div id="cd-hp" class="text-sm font-black text-emerald-400">200</div>
+                </div>
+            </div>
+
+            <div class="w-full mt-3">
+                <div class="flex justify-between text-[11px] font-bold mb-1">
+                    <span class="text-slate-300">Copias para subir nivel:</span>
+                    <span id="cd-copies" class="text-sky-300">0 / 2</span>
+                </div>
+                <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div id="cd-copies-bar" class="h-full bg-sky-400" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 w-full mt-4">
+                <button id="cd-btn-upgrade" onclick="upgradeCardAction()" class="btn-3d btn-green py-2 rounded-xl font-black text-xs flex flex-col items-center justify-center">
+                    <span>MEJORAR</span>
+                    <span id="cd-upgrade-cost" class="text-[10px]"><i class="fa-solid fa-coins"></i> 60</span>
+                </button>
+                <button id="cd-btn-toggle-deck" onclick="toggleCardDeckAction()" class="btn-3d btn-blue py-2 rounded-xl font-black text-xs flex items-center justify-center">
+                    EQUIPAR
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 5 Arenas Progresivas -->
+    <div id="modal-arenas" class="hidden absolute inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border-2 border-slate-600 rounded-3xl w-full max-w-sm max-h-[82dvh] p-4 flex flex-col shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-700 pb-2 mb-3">
+                <h3 class="font-title text-lg font-bold text-amber-300">5 Arenas Progresivas</h3>
+                <button onclick="closeArenasModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="arenas-modal-list" class="flex-1 overflow-y-auto no-scrollbar space-y-2"></div>
+        </div>
+    </div>
+
+    <!-- Modal Apertura de Sobre (Toca las cartas para voltearlas) -->
+    <div id="modal-pack-open" class="hidden absolute inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-between p-5">
+        <div class="text-center mt-2">
+            <span class="text-xs font-black uppercase tracking-widest text-amber-400">¡Sobre Abierto!</span>
+            <h3 class="font-title text-2xl font-bold text-white">Toca cada carta para revelarla</h3>
+        </div>
+        <div id="pack-cards-grid" class="grid grid-cols-3 gap-2.5 w-full my-auto max-h-[65%] overflow-y-auto p-1"></div>
+        <button id="btn-collect-pack" onclick="closePackModal()" class="btn-3d btn-gold w-full py-3.5 rounded-2xl font-title text-lg font-bold uppercase">
+            REVELAR Y RECOGER
+        </button>
+    </div>
+
+    <!-- Modal Resultado de Duelo -->
+    <div id="modal-duel-result" class="hidden absolute inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-5">
+        <div class="bg-slate-900 border-2 border-slate-600 rounded-3xl w-full max-w-xs p-5 flex flex-col items-center text-center shadow-2xl">
+            <div id="res-emoji" class="text-6xl mb-2">🏆</div>
+            <h2 id="res-title" class="font-title text-2xl font-bold text-amber-300">¡VICTORIA!</h2>
+            <p id="res-desc" class="text-xs text-slate-300 mt-1">¡Has derrotado al rival en el duelo de cartas!</p>
+            <div class="w-full bg-slate-800 rounded-2xl p-3 mt-4 border border-slate-700 flex justify-around">
+                <div>
+                    <div class="text-[10px] text-slate-400 font-bold uppercase">Oro</div>
+                    <div id="res-coins" class="text-base font-black text-amber-400">+100</div>
+                </div>
+                <div class="w-px bg-slate-700"></div>
+                <div>
+                    <div class="text-[10px] text-slate-400 font-bold uppercase">Trofeos</div>
+                    <div id="res-trophies" class="text-base font-black text-sky-400">+30</div>
+                </div>
+            </div>
+            <button onclick="closeDuelResult()" class="btn-3d btn-blue w-full py-3 rounded-2xl font-title text-base font-bold uppercase mt-5">
+                Continuar
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Rendirse -->
+    <div id="modal-surrender" class="hidden absolute inset-0 z-50 bg-black/80 flex items-center justify-center p-5">
+        <div class="bg-slate-900 border-2 border-rose-500/70 rounded-3xl w-full max-w-xs p-5 text-center shadow-2xl">
+            <div class="text-4xl mb-2">🏳️</div>
+            <h3 class="font-title text-lg font-bold text-white">¿Abandonar el Duelo?</h3>
+            <p class="text-xs text-slate-300 mt-1">Perderás el combate y 15 trofeos.</p>
+            <div class="grid grid-cols-2 gap-2.5 mt-4">
+                <button onclick="closeSurrenderDialog()" class="btn-3d bg-slate-700 text-white py-2.5 rounded-xl font-bold text-xs">Seguir</button>
+                <button onclick="confirmSurrenderAction()" class="btn-3d bg-rose-600 text-white py-2.5 rounded-xl font-bold text-xs">Rendirse</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Guía Instalación App PWA -->
+    <div id="modal-pwa-guide" class="hidden absolute inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-5">
+        <div class="bg-slate-900 border-2 border-sky-400 rounded-3xl w-full max-w-xs p-5 text-center shadow-2xl relative">
+            <button onclick="closePwaGuide()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-indigo-700 border-2 border-white mx-auto flex items-center justify-center text-3xl shadow-lg mb-3">
+                🃏
+            </div>
+            <h3 class="font-title text-xl font-bold text-white">Instalar Duelo de Poder</h3>
+            <p class="text-xs text-slate-300 mt-1">Instálalo como aplicación en tu celular para jugar en pantalla completa:</p>
+            <div class="bg-slate-800/90 rounded-2xl p-3 mt-3 text-left text-xs space-y-2 border border-slate-700">
+                <div><span class="text-emerald-400 font-black">Android (Chrome):</span> Toca el menú <i class="fa-solid fa-ellipsis-vertical"></i> arriba a la derecha y pulsa <b>"Agregar a la pantalla principal"</b>.</div>
+                <div><span class="text-sky-400 font-black">iPhone (Safari):</span> Toca el botón <b>Compartir</b> <i class="fa-solid fa-arrow-up-from-bracket"></i> abajo y pulsa <b>"Agregar a inicio"</b>.</div>
+            </div>
+            <button onclick="closePwaGuide()" class="btn-3d btn-blue w-full py-2.5 rounded-xl font-bold text-xs mt-4">¡Listo!</button>
+        </div>
+    </div>
+
+    <!-- Toast de Notificación -->
+    <div id="toast-box" class="hidden fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-slate-800/95 border border-amber-400 text-white px-4 py-2 rounded-full text-xs font-extrabold shadow-xl pointer-events-none whitespace-nowrap">
+        Mensaje
+    </div>
+</div>
+
+<script>
+/* ==========================================================================
+   1. CONFIGURACIÓN PWA (APP INSTALABLE CON MANIFIESTO E ICONO SVG)
+   ========================================================================== */
+let deferredInstallPrompt = null;
+
+(function setupPWA() {
+    const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+        <defs>
+            <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#f59e0b"/>
+                <stop offset="100%" stop-color="#4f46e5"/>
+            </linearGradient>
+        </defs>
+        <rect width="512" height="512" rx="115" fill="url(#g)"/>
+        <text x="256" y="330" font-size="250" text-anchor="middle">🃏</text>
+    </svg>`;
+    const iconUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgIcon)));
+
+    const appleLink = document.createElement('link');
+    appleLink.rel = 'apple-touch-icon';
+    appleLink.href = iconUrl;
+    document.head.appendChild(appleLink);
+
+    const manifest = {
+        name: "Duelo de Poder - Juego de Cartas",
+        short_name: "Duelo Poder",
+        start_url: ".",
+        display: "standalone",
+        background_color: "#070b14",
+        theme_color: "#0f172a",
+        orientation: "portrait",
+        icons: [
+            { src: iconUrl, sizes: "192x192", type: "image/svg+xml" },
+            { src: iconUrl, sizes: "512x512", type: "image/svg+xml" }
+        ]
+    };
+    const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+    const link = document.createElement('link');
+    link.rel = 'manifest';
+    link.href = URL.createObjectURL(blob);
+    document.head.appendChild(link);
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+    });
+})();
+
+function triggerPwaInstall() {
+    playSfx('click');
+    if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        deferredInstallPrompt.userChoice.then(() => { deferredInstallPrompt = null; });
+    } else {
+        document.getElementById('modal-pwa-guide').classList.remove('hidden');
+    }
+}
+function closePwaGuide() {
+    document.getElementById('modal-pwa-guide').classList.add('hidden');
+}
+
+/* ==========================================================================
+   2. SINTETIZADOR DE EFECTOS DE SONIDO (WEB AUDIO API)
+   ========================================================================== */
+let soundEnabled = true;
+let audioCtx = null;
+
+function toggleSound() {
+    soundEnabled = !soundEnabled;
+    document.getElementById('sound-icon').className = soundEnabled
+        ? 'fa-solid fa-volume-high text-emerald-400'
+        : 'fa-solid fa-volume-xmark text-slate-500';
+    if (soundEnabled) playSfx('click');
+}
+
+function playSfx(type) {
+    if (!soundEnabled) return;
+    if (!audioCtx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) audioCtx = new AC();
+    }
+    if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    if (type === 'click') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(540, now);
+        osc.frequency.exponentialRampToValueAtTime(760, now + 0.05);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+        osc.start(now); osc.stop(now + 0.05);
+    } else if (type === 'card') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(240, now);
+        osc.frequency.exponentialRampToValueAtTime(520, now + 0.12);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+        osc.start(now); osc.stop(now + 0.12);
+    } else if (type === 'crit') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.setValueAtTime(680, now + 0.06);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+        osc.start(now); osc.stop(now + 0.18);
+    } else if (type === 'coin') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(987, now);
+        osc.frequency.setValueAtTime(1318, now + 0.07);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+        osc.start(now); osc.stop(now + 0.24);
+    } else if (type === 'victory') {
+        [523, 659, 783, 1046].forEach((f, i) => {
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.type = 'triangle';
+            o.frequency.setValueAtTime(f, now + i * 0.09);
+            g.gain.setValueAtTime(0.16, now + i * 0.09);
+            g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.09 + 0.28);
+            o.connect(g); g.connect(audioCtx.destination);
+            o.start(now + i * 0.09); o.stop(now + i * 0.09 + 0.28);
+        });
+    }
+}
+
+/* ==========================================================================
+   3. BASE DE DATOS: 7 ELEMENTOS, 20 CARTAS Y 5 ARENAS PROGRESIVAS
+   ========================================================================== */
+const ELEMENTS = {
+    Fuego:     { icon: '🔥', beats: ['Planta'] },
+    Planta:    { icon: '🌿', beats: ['Agua'] },
+    Agua:      { icon: '💧', beats: ['Fuego'] },
+    Rayo:      { icon: '⚡', beats: ['Agua'] },
+    Tierra:    { icon: '🪨', beats: ['Rayo'] },
+    Luz:       { icon: '✨', beats: ['Oscuridad'] },
+    Oscuridad: { icon: '🌑', beats: ['Luz'] }
+};
+
+const CARDS_DB = [
+    { id: 'c1',  name: 'Zorro Ígneo',       element: 'Fuego',     rarity: 'comun',      atk: 185, hp: 140, emoji: '🦊', desc: 'Rápido espíritu de llamas que incinera plantas.' },
+    { id: 'c2',  name: 'Tortuga Coral',     element: 'Agua',      rarity: 'comun',      atk: 155, hp: 190, emoji: '🐢', desc: 'Caparazón marino que apaga cualquier fuego.' },
+    { id: 'c3',  name: 'Guardia Roble',     element: 'Planta',    rarity: 'comun',      atk: 165, hp: 180, emoji: '🌳', desc: 'Protector del bosque que absorbe el agua.' },
+    { id: 'c4',  name: 'Chispa Felina',     element: 'Rayo',      rarity: 'comun',      atk: 195, hp: 130, emoji: '🐆', desc: 'Velocidad eléctrica letal contra enemigos de agua.' },
+    { id: 'c5',  name: 'Gólem de Roca',     element: 'Tierra',    rarity: 'comun',      atk: 160, hp: 200, emoji: '🗿', desc: 'Muralla de piedra inmune a descargas de rayo.' },
+    { id: 'c6',  name: 'Escudero Solar',    element: 'Luz',       rarity: 'comun',      atk: 175, hp: 165, emoji: '🦁', desc: 'Guerrero radiante que purifica las sombras.' },
+    { id: 'c7',  name: 'Sombra Nocturna',   element: 'Oscuridad', rarity: 'comun',      atk: 190, hp: 145, emoji: '🦇', desc: 'Acechador de las tinieblas que eclipsa la luz.' },
+    { id: 'c8',  name: 'Salamandra Magma',  element: 'Fuego',     rarity: 'rara',       atk: 235, hp: 180, emoji: '🦎', desc: 'Reptil volcánico con aliento abrasador.' },
+    { id: 'c9',  name: 'Tritón Abisal',     element: 'Agua',      rarity: 'rara',       atk: 225, hp: 200, emoji: '🔱', desc: 'Maestro de mareas y corrientes profundas.' },
+    { id: 'c10', name: 'Druida Espora',     element: 'Planta',    rarity: 'rara',       atk: 215, hp: 210, emoji: '🍄', desc: 'Libera esporas tóxicas sobre sus rivales.' },
+    { id: 'c11', name: 'Halcón Tormenta',   element: 'Rayo',      rarity: 'rara',       atk: 250, hp: 165, emoji: '🦅', desc: 'Descarga relámpagos desde lo alto del cielo.' },
+    { id: 'c12', name: 'Titán Sísmico',     element: 'Tierra',    rarity: 'rara',       atk: 210, hp: 240, emoji: '🦏', desc: 'Embiste con la fuerza de un terremoto.' },
+    { id: 'c13', name: 'Valquiria Aura',    element: 'Luz',       rarity: 'epica',      atk: 280, hp: 230, emoji: '👼', desc: 'Campeona celestial de espada luminosa.' },
+    { id: 'c14', name: 'Parca Espectral',   element: 'Oscuridad', rarity: 'epica',      atk: 295, hp: 210, emoji: '👻', desc: 'Cosecha la energía vital de su oponente.' },
+    { id: 'c15', name: 'Ifrit Infernal',    element: 'Fuego',     rarity: 'epica',      atk: 300, hp: 220, emoji: '👹', desc: 'Demonio de fuego puro y destrucción.' },
+    { id: 'c16', name: 'Leviatán Rey',      element: 'Agua',      rarity: 'epica',      atk: 275, hp: 260, emoji: '🦈', desc: 'Depredador supremo de los siete mares.' },
+    { id: 'c17', name: 'Fénix Eterno',      element: 'Fuego',     rarity: 'legendaria', atk: 360, hp: 280, emoji: '🔥', desc: 'Ave mítica de poder solar incandescente.' },
+    { id: 'c18', name: 'Zeus Celestial',    element: 'Rayo',      rarity: 'legendaria', atk: 380, hp: 260, emoji: '⚡', desc: 'Señor absoluto del trueno y la tormenta.' },
+    { id: 'c19', name: 'Serafín Supremo',   element: 'Luz',       rarity: 'legendaria', atk: 350, hp: 310, emoji: '🌟', desc: 'Deidad luminosa de poder inagotable.' },
+    { id: 'c20', name: 'Dragón del Caos',   element: 'Oscuridad', rarity: 'legendaria', atk: 390, hp: 290, emoji: '🐲', desc: 'Bestia legendaria que domina el abismo.' }
+];
+
+const ARENAS_DB = [
+    { id: 1, name: 'Bosque Elemental',  minTrophies: 0,   winCoins: 100, duelHp: 1000, aiLevel: 1, emoji: '🌲', rival: 'Guardián del Bosque', desc: 'Arena inicial para dominar las ventajas elementales.' },
+    { id: 2, name: 'Cráter Volcánico',  minTrophies: 120, winCoins: 140, duelHp: 1250, aiLevel: 2, emoji: '🌋', rival: 'Señor de la Lava',    desc: 'Solo los duelistas con cartas mejoradas sobreviven al calor.' },
+    { id: 3, name: 'Fosa Oceánica',     minTrophies: 270, winCoins: 190, duelHp: 1500, aiLevel: 3, emoji: '🌊', rival: 'Emperador Abisal',    desc: 'Duelos intensos bajo las profundidades marinas.' },
+    { id: 4, name: 'Cumbre Celestial',  minTrophies: 450, winCoins: 250, duelHp: 1800, aiLevel: 4, emoji: '🏛️', rival: 'Oráculo de Luz',      desc: 'Santuario sagrado donde chocan cartas épicas.' },
+    { id: 5, name: 'Trono del Caos',    minTrophies: 650, winCoins: 350, duelHp: 2200, aiLevel: 5, emoji: '👑', rival: 'Rey Dragón',          desc: 'La liga máxima de Duelo de Poder.' }
+];
+
+/* ==========================================================================
+   4. ESTADO PERSISTENTE Y COOLDOWN ESTRICTO DE 12 HORAS
+   ========================================================================== */
+const SAVE_KEY = 'duelo_poder_cartas_v3';
+const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000; // 12 horas exactas en milisegundos
+const FREE_COINS_AMOUNT = 250;
+
+let gameState = {
+    coins: 400,
+    trophies: 0,
+    lastFreeCoinsTimestamp: 0, // 0 = disponible la primera vez; luego espera 12h exactas
+    ownedCards: {
+        'c1': { level: 1, copies: 1 },
+        'c2': { level: 1, copies: 1 },
+        'c3': { level: 1, copies: 0 },
+        'c4': { level: 1, copies: 0 },
+        'c5': { level: 1, copies: 0 },
+        'c6': { level: 1, copies: 0 },
+        'c7': { level: 1, copies: 0 },
+        'c8': { level: 1, copies: 0 },
+        'c9': { level: 1, copies: 0 },
+        'c10': { level: 1, copies: 0 }
+    },
+    deck: ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10']
+};
+
+function loadState() {
+    try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            gameState = { ...gameState, ...parsed };
+            if (typeof gameState.lastFreeCoinsTimestamp !== 'number' || isNaN(gameState.lastFreeCoinsTimestamp)) {
+                gameState.lastFreeCoinsTimestamp = 0;
+            }
+        }
+    } catch (e) {
+        console.warn('Error cargando progreso:', e);
+    }
+}
+
+function saveState() {
+    try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
+    } catch (e) {
+        console.warn('Error guardando progreso:', e);
+    }
+}
+
+function getFreeCoinsRemainingMs() {
+    const elapsed = Date.now() - gameState.lastFreeCoinsTimestamp;
+    return Math.max(0, TWELVE_HOURS_MS - elapsed);
+}
+
+function formatHHMMSS(ms) {
+    const totalSec = Math.ceil(ms / 1000);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+function updateFreeCoinsCooldownUI() {
+    const rem = getFreeCoinsRemainingMs();
+    const btn = document.getElementById('btn-claim-free-coins');
+    const txt = document.getElementById('free-coins-status-text');
+    const shopTxt = document.getElementById('shop-cooldown-label');
+
+    if (rem <= 0) {
+        btn.disabled = false;
+        btn.innerHTML = 'RECLAMAR';
+        btn.className = 'btn-3d btn-green px-3 py-2 rounded-xl font-black text-xs shrink-0 min-w-[96px] text-center animate-pulse';
+        txt.textContent = `¡Disponible ahora! (+${FREE_COINS_AMOUNT} oro)`;
+        txt.className = 'text-[10px] font-extrabold text-emerald-400 mt-0.5';
+        if (shopTxt) shopTxt.textContent = '¡Cofre gratis disponible ahora!';
+    } else {
+        const str = formatHHMMSS(rem);
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-regular fa-clock"></i> ${str}`;
+        btn.className = 'btn-3d bg-slate-800 border border-slate-600 text-slate-400 px-2.5 py-2 rounded-xl font-black text-[11px] shrink-0 min-w-[96px] text-center';
+        txt.textContent = `Próximo cofre en ${str}`;
+        txt.className = 'text-[10px] font-bold text-slate-400 mt-0.5';
+        if (shopTxt) shopTxt.textContent = `Disponible en ${str}`;
+    }
+}
+
+function claimFreeCoins12h() {
+    const rem = getFreeCoinsRemainingMs();
+    if (rem > 0) {
+        showToast(`Espera ${formatHHMMSS(rem)} para reclamar de nuevo.`);
+        return;
+    }
+    gameState.lastFreeCoinsTimestamp = Date.now();
+    gameState.coins += FREE_COINS_AMOUNT;
+    saveState();
+    playSfx('coin');
+    refreshGlobalUI();
+    updateFreeCoinsCooldownUI();
+    showToast(`¡+${FREE_COINS_AMOUNT} monedas reclamadas! Vuelve en 12h.`);
+}
+
+/* ==========================================================================
+   5. NAVEGACIÓN, MAZO DE 10 CARTAS, TIENDA Y ARENAS
+   ========================================================================== */
+let activeFilter = 'TODOS';
+let inspectedCardId = null;
+
+function getCurrentArena() {
+    let current = ARENAS_DB[0];
+    for (const a of ARENAS_DB) {
+        if (gameState.trophies >= a.minTrophies) current = a;
+    }
+    return current;
+}
+
+function getCardComputed(cardId, overrideLevel = null) {
+    const base = CARDS_DB.find(c => c.id === cardId);
+    const owned = gameState.ownedCards[cardId];
+    const level = overrideLevel || (owned ? owned.level : 1);
+    const mult = 1 + (level - 1) * 0.18;
+    return {
+        ...base,
+        level,
+        atk: Math.round(base.atk * mult),
+        hp: Math.round(base.hp * mult)
+    };
+}
+
+function showToast(msg) {
+    const box = document.getElementById('toast-box');
+    box.textContent = msg;
+    box.classList.remove('hidden');
+    clearTimeout(box._timer);
+    box._timer = setTimeout(() => box.classList.add('hidden'), 2200);
+}
+
+function switchTab(tab) {
+    playSfx('click');
+    ['battle', 'deck', 'shop'].forEach(t => {
+        const view = document.getElementById(`view-${t}`);
+        const btn = document.getElementById(`tab-${t}`);
+        if (t === tab) {
+            view.classList.remove('hidden');
+            view.classList.add('flex');
+            btn.className = 'nav-tab flex flex-col items-center justify-center py-1 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40';
+        } else {
+            view.classList.add('hidden');
+            view.classList.remove('flex');
+            btn.className = 'nav-tab flex flex-col items-center justify-center py-1 rounded-xl text-slate-400 relative';
+        }
+    });
+    if (tab === 'battle') refreshGlobalUI();
+    if (tab === 'deck') renderDeckScreen();
+}
+
+function refreshGlobalUI() {
+    const arena = getCurrentArena();
+    document.getElementById('ui-coins').textContent = gameState.coins;
+    document.getElementById('ui-trophies').textContent = gameState.trophies;
+    document.getElementById('ui-arena-num').textContent = arena.id;
+    document.getElementById('ui-arena-badge').textContent = arena.emoji;
+
+    document.getElementById('lobby-arena-tag').textContent = `Arena ${arena.id} / 5`;
+    document.getElementById('lobby-arena-emblem').textContent = arena.emoji;
+    document.getElementById('lobby-arena-name').textContent = arena.name;
+    document.getElementById('lobby-arena-desc').textContent = arena.desc;
+    document.getElementById('lobby-win-coins').textContent = arena.winCoins;
+
+    const valid = gameState.deck.length === 10;
+    const pill = document.getElementById('lobby-deck-pill');
+    const playBtn = document.getElementById('btn-play-battle');
+    const dot = document.getElementById('deck-warning-dot');
+
+    if (valid) {
+        pill.textContent = '10 / 10 Listo';
+        pill.className = 'text-xs font-black px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+        playBtn.disabled = false;
+        dot.classList.add('hidden');
+    } else {
+        pill.textContent = `${gameState.deck.length} / 10 Incompleto`;
+        pill.className = 'text-xs font-black px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40';
+        playBtn.disabled = true;
+        dot.classList.remove('hidden');
+    }
+}
+
+function autoFillBestDeck() {
+    playSfx('card');
+    const ownedIds = Object.keys(gameState.ownedCards);
+    ownedIds.sort((a, b) => getCardComputed(b).atk - getCardComputed(a).atk);
+    gameState.deck = ownedIds.slice(0, 10);
+    saveState();
+    renderDeckScreen();
+    showToast('¡Mazo de 10 cartas más fuertes equipado!');
+}
+
+function renderDeckScreen() {
+    refreshGlobalUI();
+    const slots = document.getElementById('active-deck-slots');
+    slots.innerHTML = '';
+
+    for (let i = 0; i < 10; i++) {
+        const cid = gameState.deck[i];
+        if (cid) {
+            const c = getCardComputed(cid);
+            const div = document.createElement('div');
+            div.onclick = () => openCardDetail(cid);
+            div.className = `h-16 rounded-xl border-2 rarity-${c.rarity} p-1 flex flex-col items-center justify-between cursor-pointer active:scale-95 transition`;
+            div.innerHTML = `
+                <div class="w-full flex justify-between text-[9px] font-black">
+                    <span class="text-rose-300">⚔️${c.atk}</span>
+                    <span>${ELEMENTS[c.element].icon}</span>
+                </div>
+                <div class="text-xl leading-none">${c.emoji}</div>
+                <span class="text-[8px] font-black text-amber-300 bg-black/50 px-1 rounded">Nv.${c.level}</span>
+            `;
+            slots.appendChild(div);
+        } else {
+            const empty = document.createElement('div');
+            empty.className = 'h-16 rounded-xl border-2 border-dashed border-slate-600 bg-slate-900/60 flex flex-col items-center justify-center text-slate-500';
+            empty.innerHTML = `<i class="fa-solid fa-plus text-xs"></i><span class="text-[8px] font-bold">Vacío</span>`;
+            slots.appendChild(empty);
+        }
+    }
+
+    const badge = document.getElementById('deck-count-badge');
+    badge.textContent = `${gameState.deck.length}/10`;
+    badge.className = gameState.deck.length === 10
+        ? 'text-[11px] font-black px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+        : 'text-[11px] font-black px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 animate-pulse';
+
+    document.getElementById('collection-unlocked').textContent = Object.keys(gameState.ownedCards).length;
+
+    const grid = document.getElementById('collection-cards-grid');
+    grid.innerHTML = '';
+
+    CARDS_DB.filter(c => activeFilter === 'TODOS' || c.element === activeFilter).forEach(card => {
+        const owned = gameState.ownedCards[card.id];
+        const inDeck = gameState.deck.includes(card.id);
+        const el = document.createElement('div');
+
+        if (owned) {
+            const stats = getCardComputed(card.id);
+            const req = stats.level * 2;
+            const canUpg = owned.copies >= req;
+            el.onclick = () => openCardDetail(card.id);
+            el.className = `rounded-2xl border-2 rarity-${card.rarity} p-2 flex flex-col items-center justify-between cursor-pointer relative active:scale-95 transition ${inDeck ? 'ring-2 ring-amber-400' : ''}`;
+            el.innerHTML = `
+                <div class="w-full flex justify-between items-center text-[10px] font-black">
+                    <span class="text-rose-300">⚔️${stats.atk}</span>
+                    <span>${ELEMENTS[stats.element].icon}</span>
+                </div>
+                <div class="text-3xl my-1">${stats.emoji}</div>
+                <div class="text-[10px] font-extrabold text-white text-center truncate w-full">${stats.name}</div>
+                <div class="w-full mt-1 flex justify-between text-[9px] font-black bg-black/50 px-1.5 py-0.5 rounded">
+                    <span class="text-amber-300">Nv.${stats.level}</span>
+                    <span class="${canUpg ? 'text-emerald-400 animate-pulse' : 'text-slate-300'}">${canUpg ? '▲ Subir' : `${owned.copies}/${req}`}</span>
+                </div>
+                ${inDeck ? '<span class="absolute -top-1.5 -right-1.5 bg-amber-400 text-slate-950 text-[8px] font-black px-1.5 rounded-full">MAZO</span>' : ''}
+            `;
+        } else {
+            el.onclick = () => showToast('Abre sobres en la Tienda para conseguir esta carta.');
+            el.className = 'rounded-2xl border-2 border-slate-800 bg-slate-900/60 p-2 flex flex-col items-center justify-between opacity-50 cursor-pointer';
+            el.innerHTML = `
+                <div class="w-full flex justify-between text-[10px] font-black text-slate-500"><span>⚔️${card.atk}</span><span>${ELEMENTS[card.element].icon}</span></div>
+                <div class="text-3xl my-1 grayscale">🔒</div>
+                <div class="text-[10px] font-bold text-slate-400 truncate w-full text-center">${card.name}</div>
+                <div class="text-[8px] uppercase font-bold text-slate-500 mt-1">Bloqueada</div>
+            `;
+        }
+        grid.appendChild(el);
+    });
+}
+
+function setDeckFilter(elem) {
+    playSfx('click');
+    activeFilter = elem;
+    document.querySelectorAll('.filter-chip').forEach(btn => {
+        const match = (elem === 'TODOS' && btn.textContent === 'Todas') || btn.textContent.includes(elem);
+        btn.className = match
+            ? 'filter-chip px-2.5 py-1 rounded-lg text-[11px] font-black bg-sky-600 text-white shrink-0'
+            : 'filter-chip px-2 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-slate-300 shrink-0';
+    });
+    renderDeckScreen();
+}
+
+function openCardDetail(cardId) {
+    playSfx('click');
+    inspectedCardId = cardId;
+    const owned = gameState.ownedCards[cardId];
+    if (!owned) return;
+
+    const c = getCardComputed(cardId);
+    const reqCopies = c.level * 2;
+    const reqCoins = c.level * 60;
+    const inDeck = gameState.deck.includes(cardId);
+
+    document.getElementById('cd-rarity').textContent = c.rarity.toUpperCase();
+    document.getElementById('cd-visual').className = `w-28 h-36 rounded-2xl border-4 rarity-${c.rarity} flex flex-col items-center justify-between p-2 shadow-lg`;
+    document.getElementById('cd-elem-text').textContent = `${ELEMENTS[c.element].icon} ${c.element}`;
+    document.getElementById('cd-emoji').textContent = c.emoji;
+    document.getElementById('cd-level').textContent = `Nivel ${c.level}`;
+    document.getElementById('cd-name').textContent = c.name;
+    document.getElementById('cd-desc').textContent = c.desc;
+    document.getElementById('cd-atk').textContent = c.atk;
+    document.getElementById('cd-hp').textContent = c.hp;
+    document.getElementById('cd-copies').textContent = `${owned.copies} / ${reqCopies}`;
+    document.getElementById('cd-copies-bar').style.width = `${Math.min(100, (owned.copies / reqCopies) * 100)}%`;
+
+    const upgBtn = document.getElementById('cd-btn-upgrade');
+    document.getElementById('cd-upgrade-cost').innerHTML = `<i class="fa-solid fa-coins"></i> ${reqCoins}`;
+    upgBtn.disabled = !(owned.copies >= reqCopies && gameState.coins >= reqCoins);
+
+    const deckBtn = document.getElementById('cd-btn-toggle-deck');
+    if (inDeck) {
+        deckBtn.textContent = 'QUITAR';
+        deckBtn.className = 'btn-3d bg-rose-600 border-2 border-rose-300 text-white py-2 rounded-xl font-black text-xs flex items-center justify-center';
+    } else {
+        deckBtn.textContent = 'EQUIPAR';
+        deckBtn.className = 'btn-3d btn-blue py-2 rounded-xl font-black text-xs flex items-center justify-center';
+    }
+
+    document.getElementById('modal-card-detail').classList.remove('hidden');
+}
+
+function closeCardDetail() {
+    document.getElementById('modal-card-detail').classList.add('hidden');
+}
+
+function upgradeCardAction() {
+    if (!inspectedCardId) return;
+    const owned = gameState.ownedCards[inspectedCardId];
+    const reqCopies = owned.level * 2;
+    const reqCoins = owned.level * 60;
+
+    if (owned.copies >= reqCopies && gameState.coins >= reqCoins) {
+        gameState.coins -= reqCoins;
+        owned.copies -= reqCopies;
+        owned.level += 1;
+        saveState();
+        playSfx('coin');
+        renderDeckScreen();
+        openCardDetail(inspectedCardId);
+        showToast(`¡Carta mejorada a Nivel ${owned.level}!`);
+    }
+}
+
+function toggleCardDeckAction() {
+    if (!inspectedCardId) return;
+    const idx = gameState.deck.indexOf(inspectedCardId);
+    if (idx !== -1) {
+        gameState.deck.splice(idx, 1);
+        playSfx('click');
+        showToast('Carta quitada del mazo.');
+    } else {
+        if (gameState.deck.length >= 10) {
+            showToast('Tu mazo ya tiene 10 cartas. Quita una primero.');
+            return;
+        }
+        gameState.deck.push(inspectedCardId);
+        playSfx('card');
+        showToast('¡Carta añadida al mazo!');
+    }
+    saveState();
+    renderDeckScreen();
+    openCardDetail(inspectedCardId);
+}
+
+function openArenasModal() {
+    playSfx('click');
+    const list = document.getElementById('arenas-modal-list');
+    list.innerHTML = '';
+    const current = getCurrentArena();
+
+    ARENAS_DB.forEach(a => {
+        const unlocked = gameState.trophies >= a.minTrophies;
+        const isCurrent = a.id === current.id;
+        const row = document.createElement('div');
+        row.className = `p-2.5 rounded-2xl border-2 flex items-center justify-between ${isCurrent ? 'border-amber-400 bg-slate-800' : unlocked ? 'border-emerald-600/50 bg-slate-950/80' : 'border-slate-800 bg-slate-950/50 opacity-55'}`;
+        row.innerHTML = `
+            <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-2xl">${unlocked ? a.emoji : '🔒'}</div>
+                <div>
+                    <div class="font-title font-bold text-sm text-white">Arena ${a.id}: ${a.name}</div>
+                    <div class="text-[10px] text-slate-300">Victoria: <span class="text-amber-400 font-bold">+${a.winCoins} oro</span></div>
+                </div>
+            </div>
+            <div class="text-right">
+                ${isCurrent ? '<span class="text-[10px] font-black bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded">ACTUAL</span>' : `<span class="text-xs font-black text-slate-300">🏆 ${a.minTrophies}</span>`}
+            </div>
+        `;
+        list.appendChild(row);
+    });
+    document.getElementById('modal-arenas').classList.remove('hidden');
+}
+
+function closeArenasModal() {
+    document.getElementById('modal-arenas').classList.add('hidden');
+}
+
+/* ==========================================================================
+   6. TIENDA DE SOBRES INTERACTIVOS (VOLTEAR CARTAS AL TOCAR)
+   ========================================================================== */
+function buyPack(type, cost) {
+    if (gameState.coins < cost) {
+        showToast('No tienes suficiente oro.');
+        return;
+    }
+    gameState.coins -= cost;
+    playSfx('coin');
+
+    const pick = (rarities) => {
+        const pool = CARDS_DB.filter(c => rarities.includes(c.rarity));
+        return pool[Math.floor(Math.random() * pool.length)];
+    };
+
+    let pulls = [];
+    if (type === 'basico') {
+        pulls = [pick(['comun']), pick(['comun', 'rara']), pick(['rara'])];
+    } else if (type === 'epico') {
+        pulls = [pick(['comun', 'rara']), pick(['rara']), pick(['rara']), pick(['epica']), pick(['epica', 'legendaria'])];
+    } else {
+        pulls = [pick(['rara']), pick(['rara']), pick(['epica']), pick(['epica']), pick(['epica', 'legendaria']), pick(['legendaria'])];
+    }
+
+    const grid = document.getElementById('pack-cards-grid');
+    grid.innerHTML = '';
+
+    pulls.forEach(card => {
+        const isNew = !gameState.ownedCards[card.id];
+        if (isNew) {
+            gameState.ownedCards[card.id] = { level: 1, copies: 1 };
+        } else {
+            gameState.ownedCards[card.id].copies += 1;
+        }
+
+        const slot = document.createElement('div');
+        slot.dataset.revealed = 'false';
+        slot.className = 'h-32 rounded-2xl border-2 border-amber-400/70 bg-gradient-to-br from-indigo-900 to-slate-900 flex flex-col items-center justify-center cursor-pointer shadow-lg active:scale-95 transition';
+        slot.innerHTML = `<div class="text-3xl animate-bounce">🃏</div><span class="text-[9px] font-black text-amber-300 mt-1">TOCA</span>`;
+
+        const revealCard = () => {
+            if (slot.dataset.revealed === 'true') return;
+            slot.dataset.revealed = 'true';
+            playSfx('card');
+            slot.className = `anim-card-flip h-32 rounded-2xl border-2 rarity-${card.rarity} p-2 flex flex-col items-center justify-between relative`;
+            slot.innerHTML = `
+                <span class="absolute -top-2 ${isNew ? 'bg-emerald-500 text-slate-950' : 'bg-sky-500 text-white'} text-[8px] font-black px-1.5 rounded-full">${isNew ? '¡NUEVA!' : '+1 Copia'}</span>
+                <div class="w-full flex justify-between text-[9px] font-black mt-1"><span>⚔️${card.atk}</span><span>${ELEMENTS[card.element].icon}</span></div>
+                <div class="text-3xl">${card.emoji}</div>
+                <div class="text-[9px] font-extrabold text-white text-center leading-tight">${card.name}</div>
+            `;
+        };
+        slot.onclick = revealCard;
+        slot._reveal = revealCard;
+        grid.appendChild(slot);
+    });
+
+    saveState();
+    refreshGlobalUI();
+    document.getElementById('modal-pack-open').classList.remove('hidden');
+}
+
+function closePackModal() {
+    // Si quedó alguna carta sin voltear, revelarla antes de cerrar o cerrar si ya todas están reveladas
+    const cards = document.querySelectorAll('#pack-cards-grid > div');
+    let anyHidden = false;
+    cards.forEach(c => {
+        if (c.dataset.revealed === 'false') {
+            anyHidden = true;
+            c._reveal();
+        }
+    });
+    if (anyHidden) return;
+    document.getElementById('modal-pack-open').classList.add('hidden');
+}
+
+/* ==========================================================================
+   7. MOTOR DE DUELO DE CARTAS 1v1 POR TURNOS (DINÁMICO Y ÁGIL)
+   ========================================================================== */
+let duel = null;
+
+function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+function getElementMultiplier(atkElem, defElem) {
+    if (!atkElem || !defElem) return 1.0;
+    if (ELEMENTS[atkElem].beats.includes(defElem)) return 1.5;
+    return 1.0;
+}
+
+function startCardDuel() {
+    if (gameState.deck.length !== 10) {
+        showToast('Debes tener exactamente 10 cartas únicas en tu Mazo.');
+        switchTab('deck');
+        return;
+    }
+
+    playSfx('card');
+    const arena = getCurrentArena();
+    const playerDeck = shuffle(gameState.deck);
+
+    // Mazo de 10 cartas de la IA acorde a la Arena
+    const aiPool = shuffle(CARDS_DB).slice(0, 10).map(c => c.id);
+
+    duel = {
+        active: true,
+        busy: false,
+        arena,
+        round: 1,
+        playerHp: arena.duelHp,
+        playerMaxHp: arena.duelHp,
+        enemyHp: arena.duelHp,
+        enemyMaxHp: arena.duelHp,
+        playerHand: playerDeck.slice(0, 4),
+        playerPile: playerDeck.slice(4),
+        enemyHand: aiPool.slice(0, 4),
+        enemyPile: aiPool.slice(4)
+    };
+
+    document.getElementById('duel-enemy-avatar').textContent = arena.emoji;
+    document.getElementById('duel-enemy-name').textContent = arena.rival;
+    document.getElementById('duel-round-num').textContent = '1';
+    document.getElementById('duel-enemy-deck-count').textContent = '10';
+    document.getElementById('clash-banner').textContent = '¡Selecciona una carta de tu mano para lanzar!';
+    document.getElementById('clash-banner').className = 'px-4 py-1.5 rounded-full bg-slate-900/95 border border-slate-700 text-xs font-extrabold text-amber-300 shadow-lg text-center';
+
+    resetPlayedSlots();
+    updateDuelBars();
+    renderDuelHand();
+
+    const screen = document.getElementById('duel-screen');
+    screen.classList.remove('hidden');
+    screen.classList.add('flex');
+}
+
+function resetPlayedSlots() {
+    document.getElementById('enemy-played-slot').className = 'w-32 h-40 rounded-2xl border-2 border-dashed border-rose-500/40 bg-slate-900/50 flex flex-col items-center justify-center text-slate-500 relative';
+    document.getElementById('enemy-played-slot').innerHTML = `<span class="text-2xl opacity-40">❓</span><span class="text-[10px] font-bold mt-1">Carta Rival</span>`;
+
+    document.getElementById('player-played-slot').className = 'w-32 h-40 rounded-2xl border-2 border-dashed border-sky-500/40 bg-slate-900/50 flex flex-col items-center justify-center text-slate-500 relative';
+    document.getElementById('player-played-slot').innerHTML = `<span class="text-2xl opacity-40">🃏</span><span class="text-[10px] font-bold mt-1">Tu Carta</span>`;
+}
+
+function updateDuelBars() {
+    const pPct = Math.max(0, (duel.playerHp / duel.playerMaxHp) * 100);
+    const ePct = Math.max(0, (duel.enemyHp / duel.enemyMaxHp) * 100);
+    document.getElementById('player-hp-bar').style.width = `${pPct}%`;
+    document.getElementById('enemy-hp-bar').style.width = `${ePct}%`;
+    document.getElementById('player-hp-text').textContent = Math.max(0, duel.playerHp);
+    document.getElementById('enemy-hp-text').textContent = Math.max(0, duel.enemyHp);
+    document.getElementById('duel-round-num').textContent = duel.round;
+    document.getElementById('duel-enemy-deck-count').textContent = duel.enemyHand.length + duel.enemyPile.length;
+}
+
+function renderDuelHand() {
+    const grid = document.getElementById('duel-hand-grid');
+    grid.innerHTML = '';
+
+    duel.playerHand.forEach((cid, idx) => {
+        const c = getCardComputed(cid);
+        const btn = document.createElement('button');
+        btn.disabled = duel.busy;
+        btn.onclick = () => playTurnCard(idx);
+        btn.className = `h-24 rounded-2xl border-2 rarity-${c.rarity} p-1.5 flex flex-col items-center justify-between active:scale-95 transition shadow-lg`;
+        btn.innerHTML = `
+            <div class="w-full flex justify-between items-center text-[10px] font-black">
+                <span class="text-rose-300">⚔️${c.atk}</span>
+                <span>${ELEMENTS[c.element].icon}</span>
+            </div>
+            <div class="text-2xl leading-none">${c.emoji}</div>
+            <div class="text-[9px] font-extrabold text-white truncate w-full text-center">${c.name.split(' ')[0]}</div>
+        `;
+        grid.appendChild(btn);
+    });
+}
+
+function renderPlayedCardHTML(card, mult, isPlayer) {
+    const badge = mult > 1
+        ? `<span class="absolute -top-2.5 bg-emerald-500 text-slate-950 text-[9px] font-black px-2 py-0.5 rounded-full shadow animate-bounce">¡x1.5 ELEMENTAL!</span>`
+        : '';
+    return `
+        ${badge}
+        <div class="w-full flex justify-between items-center text-xs font-black">
+            <span class="text-rose-300">⚔️${Math.round(card.atk * mult)}</span>
+            <span>${ELEMENTS[card.element].icon}</span>
+        </div>
+        <div class="text-4xl my-1">${card.emoji}</div>
+        <div class="text-[10px] font-extrabold text-white text-center leading-tight">${card.name}</div>
+        <div class="text-[8px] font-bold ${isPlayer ? 'text-sky-300' : 'text-rose-300'}">${card.element} • Nv.${card.level}</div>
+    `;
+}
+
+function spawnFloatingDamage(text, colorClass, topOffset) {
+    const layer = document.getElementById('floating-dmg-layer');
+    const tag = document.createElement('div');
+    tag.style.top = topOffset;
+    tag.style.left = '50%';
+    tag.className = `anim-dmg-float absolute font-title text-lg font-bold ${colorClass} drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] whitespace-nowrap z-30`;
+    tag.textContent = text;
+    layer.appendChild(tag);
+    setTimeout(() => tag.remove(), 950);
+}
+
+function playTurnCard(handIdx) {
+    if (!duel || !duel.active || duel.busy) return;
+    duel.busy = true;
+    playSfx('card');
+
+    // 1. Carta elegida por el jugador
+    const pCardId = duel.playerHand[handIdx];
+    const pCard = getCardComputed(pCardId);
+
+    // 2. Carta elegida por la IA
+    const eIdx = Math.floor(Math.random() * duel.enemyHand.length);
+    const eCardId = duel.enemyHand[eIdx];
+    const eCard = getCardComputed(eCardId, duel.arena.aiLevel);
+
+    // 3. Calcular multiplicadores elementales (x1.5)
+    const pMult = getElementMultiplier(pCard.element, eCard.element);
+    const eMult = getElementMultiplier(eCard.element, pCard.element);
+
+    const pFinalAtk = Math.round(pCard.atk * pMult);
+    const eFinalAtk = Math.round(eCard.atk * eMult);
+
+    // Mostrar ambas cartas chocando en el tablero central
+    const pSlot = document.getElementById('player-played-slot');
+    const eSlot = document.getElementById('enemy-played-slot');
+
+    pSlot.className = `anim-clash-player w-32 h-40 rounded-2xl border-2 rarity-${pCard.rarity} p-2 flex flex-col items-center justify-between relative shadow-2xl`;
+    pSlot.innerHTML = renderPlayedCardHTML(pCard, pMult, true);
+
+    eSlot.className = `anim-clash-enemy w-32 h-40 rounded-2xl border-2 rarity-${eCard.rarity} p-2 flex flex-col items-center justify-between relative shadow-2xl`;
+    eSlot.innerHTML = renderPlayedCardHTML(eCard, eMult, false);
+
+    renderDuelHand();
+
+    // Resolver impacto tras 420ms de choque
+    setTimeout(() => {
+        if (!duel || !duel.active) return;
+
+        // Daño directo al duelista + diferencia de choque de cartas
+        const dmgToEnemy = Math.max(60, pFinalAtk - Math.round(eCard.hp * 0.25));
+        const dmgToPlayer = Math.max(50, eFinalAtk - Math.round(pCard.hp * 0.25));
+
+        duel.enemyHp -= dmgToEnemy;
+        duel.playerHp -= dmgToPlayer;
+
+        spawnFloatingDamage(`-${dmgToEnemy} HP`, pMult > 1 ? 'text-emerald-400' : 'text-amber-300', '-52px');
+        spawnFloatingDamage(`-${dmgToPlayer} HP`, eMult > 1 ? 'text-rose-500' : 'text-rose-300', '34px');
+
+        const banner = document.getElementById('clash-banner');
+        if (pMult > 1) {
+            playSfx('crit');
+            banner.textContent = `🔥 ¡VENTAJA x1.5! ${pCard.element} vence a ${eCard.element} (-${dmgToEnemy})`;
+            banner.className = 'px-4 py-1.5 rounded-full bg-emerald-950 border border-emerald-400 text-xs font-black text-emerald-300 shadow-lg text-center';
+            const shell = document.getElementById('app-shell');
+            shell.classList.remove('shake-active');
+            void shell.offsetWidth;
+            shell.classList.add('shake-active');
+        } else if (eMult > 1) {
+            playSfx('crit');
+            banner.textContent = `⚠️ ¡Rival con x1.5! ${eCard.element} vence a ${pCard.element} (-${dmgToPlayer})`;
+            banner.className = 'px-4 py-1.5 rounded-full bg-rose-950 border border-rose-400 text-xs font-black text-rose-300 shadow-lg text-center';
+        } else {
+            banner.textContent = `⚔️ Choque parejo: Infliges ${dmgToEnemy} • Recibes ${dmgToPlayer}`;
+            banner.className = 'px-4 py-1.5 rounded-full bg-slate-900 border border-slate-600 text-xs font-extrabold text-white shadow-lg text-center';
+        }
+
+        updateDuelBars();
+
+        // Ciclar mazo de 10 cartas para ambos
+        duel.playerPile.push(pCardId);
+        duel.playerHand[handIdx] = duel.playerPile.shift();
+
+        duel.enemyPile.push(eCardId);
+        duel.enemyHand[eIdx] = duel.enemyPile.shift();
+
+        // Verificar ganador o pasar a la siguiente ronda
+        setTimeout(() => {
+            if (!duel || !duel.active) return;
+
+            if (duel.enemyHp <= 0) {
+                finishCardDuel(true);
+                return;
+            }
+            if (duel.playerHp <= 0) {
+                finishCardDuel(false);
+                return;
+            }
+
+            duel.round += 1;
+            duel.busy = false;
+            updateDuelBars();
+            renderDuelHand();
+        }, 900);
+
+    }, 420);
+}
+
+function toggleElementDrawer() {
+    playSfx('click');
+    document.getElementById('element-drawer').classList.toggle('hidden');
+}
+
+function openSurrenderDialog() {
+    document.getElementById('modal-surrender').classList.remove('hidden');
+}
+function closeSurrenderDialog() {
+    document.getElementById('modal-surrender').classList.add('hidden');
+}
+function confirmSurrenderAction() {
+    closeSurrenderDialog();
+    finishCardDuel(false);
+}
+
+function finishCardDuel(victory) {
+    if (!duel || !duel.active) return;
+    duel.active = false;
+
+    const arena = duel.arena;
+    if (victory) {
+        playSfx('victory');
+        gameState.coins += arena.winCoins;
+        gameState.trophies += 30;
+        document.getElementById('res-emoji').textContent = '🏆';
+        document.getElementById('res-title').textContent = '¡VICTORIA!';
+        document.getElementById('res-title').className = 'font-title text-2xl font-bold text-amber-300';
+        document.getElementById('res-desc').textContent = `¡Venciste a ${arena.rival} en ${duel.round} rondas!`;
+        document.getElementById('res-coins').textContent = `+${arena.winCoins} 🪙`;
+        document.getElementById('res-trophies').textContent = '+30 🏆';
+        document.getElementById('res-trophies').className = 'text-base font-black text-sky-400';
+    } else {
+        const lost = Math.min(gameState.trophies, 15);
+        gameState.trophies -= lost;
+        gameState.coins += 20;
+        document.getElementById('res-emoji').textContent = '💀';
+        document.getElementById('res-title').textContent = 'DERROTA';
+        document.getElementById('res-title').className = 'font-title text-2xl font-bold text-rose-400';
+        document.getElementById('res-desc').textContent = '¡Usa las ventajas elementales x1.5 a tu favor!';
+        document.getElementById('res-coins').textContent = '+20 🪙';
+        document.getElementById('res-trophies').textContent = `-${lost} 🏆`;
+        document.getElementById('res-trophies').className = 'text-base font-black text-rose-400';
+    }
+
+    saveState();
+    document.getElementById('modal-duel-result').classList.remove('hidden');
+}
+
+function closeDuelResult() {
+    document.getElementById('modal-duel-result').classList.add('hidden');
+    document.getElementById('duel-screen').classList.add('hidden');
+    document.getElementById('duel-screen').classList.remove('flex');
+    refreshGlobalUI();
+}
+
+/* ==========================================================================
+   8. INICIALIZACIÓN DE LA APLICACIÓN
+   ========================================================================== */
+window.onload = function () {
+    loadState();
+    refreshGlobalUI();
+    updateFreeCoinsCooldownUI();
+    setInterval(updateFreeCoinsCooldownUI, 1000);
+};
+</script>
+</body>
+</html>
